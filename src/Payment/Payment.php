@@ -28,6 +28,8 @@ use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Class Payment.
+ *
+ * @mixin API
  */
 class Payment
 {
@@ -92,7 +94,7 @@ class Payment
         $notify = $this->getNotify();
 
         if (!$notify->isValid()) {
-            throw new FaultException('Invalid request XML.', 400);
+            throw new FaultException('Invalid request payloads.', 400);
         }
 
         $notify = $notify->getNotify();
@@ -116,7 +118,14 @@ class Payment
     }
 
     /**
-     * Generate js config for payment.
+     * [WeixinJSBridge] Generate js config for payment.
+     *
+     * <pre>
+     * WeixinJSBridge.invoke(
+     *  'getBrandWCPayRequest',
+     *  ...
+     * );
+     * </pre>
      *
      * @param string $prepayId
      * @param bool   $json
@@ -136,6 +145,27 @@ class Payment
         $params['paySign'] = generate_sign($params, $this->merchant->key, 'md5');
 
         return $json ? json_encode($params) : $params;
+    }
+
+    /**
+     * [JSSDK] Generate js config for payment.
+     *
+     * <pre>
+     * wx.chooseWXPay({...});
+     * </pre>
+     *
+     * @param string $prepayId
+     *
+     * @return array|string
+     */
+    public function configForJSSDKPayment($prepayId)
+    {
+        $config = $this->configForPayment($prepayId, false);
+
+        $config['timestamp'] = $config['timeStamp'];
+        unset($config['timeStamp']);
+
+        return $config;
     }
 
     /**

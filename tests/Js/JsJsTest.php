@@ -13,7 +13,7 @@ namespace {
     use EasyWeChat\Core\Http;
     use EasyWeChat\Js\Js;
 
-    class JsJsTest extends PHPUnit_Framework_TestCase
+    class JsJsTest extends TestCase
     {
         public function getMockCache()
         {
@@ -23,7 +23,7 @@ namespace {
         public function getMockHttp()
         {
             $http = Mockery::mock(Http::class.'[get]', function ($mock) {
-            $mock->shouldReceive('get')->andReturn(json_encode([
+                $mock->shouldReceive('get')->andReturn(json_encode([
                         'access_token' => 'thisIsATokenFromHttp',
                         'expires_in' => 7200,
                     ]));

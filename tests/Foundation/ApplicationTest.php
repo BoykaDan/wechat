@@ -9,13 +9,14 @@
  * with this source code in the file LICENSE.
  */
 
+use EasyWeChat\Core\Http;
 use EasyWeChat\Foundation\Application;
 use EasyWeChat\Foundation\Config;
 use Pimple\Container;
 use Pimple\ServiceProviderInterface;
 use Symfony\Component\HttpFoundation\Request;
 
-class ApplicationTest extends PHPUnit_Framework_TestCase
+class ApplicationTest extends TestCase
 {
     /**
      * Test __construct().
@@ -41,6 +42,18 @@ class ApplicationTest extends PHPUnit_Framework_TestCase
 
             unset($container);
         }
+    }
+
+    public function testHttpDefaultOptions()
+    {
+        $app = new Application([]);
+
+        $this->assertEquals(['timeout' => 5.0], Http::getDefaultOptions());
+
+        $config = ['guzzle' => ['timeout' => 6]];
+        $app = new Application($config);
+
+        $this->assertEquals($config['guzzle'], Http::getDefaultOptions());
     }
 
     /**

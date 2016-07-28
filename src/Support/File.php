@@ -32,7 +32,7 @@ class File
      *
      * @var array
      */
-    protected static $extensionMap = array(
+    protected static $extensionMap = [
         'audio/wav' => '.wav',
         'audio/x-ms-wma' => '.wma',
         'video/x-ms-wmv' => '.wmv',
@@ -46,7 +46,7 @@ class File
         'image/png' => '.png',
         'image/tiff' => '.tiff',
         'image/jpeg' => '.jpg',
-    );
+    ];
 
     /**
      * File header signatures.
@@ -79,6 +79,10 @@ class File
      */
     public static function getStreamExt($stream)
     {
+        if (is_dir(pathinfo($stream, PATHINFO_DIRNAME)) && is_readable($stream)) {
+            $stream = file_get_contents($stream);
+        }
+
         $finfo = new finfo(FILEINFO_MIME);
 
         $mime = strstr($finfo->buffer($stream), ';', true);

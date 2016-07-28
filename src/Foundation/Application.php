@@ -27,6 +27,7 @@ namespace EasyWeChat\Foundation;
 
 use Doctrine\Common\Cache\FilesystemCache;
 use EasyWeChat\Core\AccessToken;
+use EasyWeChat\Core\Http;
 use EasyWeChat\Support\Log;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
@@ -39,6 +40,7 @@ use Symfony\Component\HttpFoundation\Request;
  *
  * @property \EasyWeChat\Server\Guard                    $server
  * @property \EasyWeChat\User\User                       $user
+ * @property \EasyWeChat\User\Tag                        $user_tag
  * @property \EasyWeChat\User\Group                      $user_group
  * @property \EasyWeChat\Js\Js                           $js
  * @property \Overtrue\Socialite\SocialiteManager        $oauth
@@ -105,7 +107,13 @@ class Application extends Container
         $this->registerBase();
         $this->initializeLogger();
 
-        Log::debug('Current configuration:', $config);
+        Http::setDefaultOptions($this['config']->get('guzzle', ['timeout' => 5.0]));
+
+        foreach (['app_id', 'secret'] as $key) {
+            !isset($config[$key]) || $config[$key] = '***'.substr($config[$key], -5);
+        }
+
+        Log::debug('Current config:', $config);
     }
 
     /**
@@ -193,7 +201,7 @@ class Application extends Container
         };
 
         $this['access_token'] = function () {
-           return new AccessToken(
+            return new AccessToken(
                $this['config']['app_id'],
                $this['config']['secret'],
                $this['cache']

@@ -19,7 +19,7 @@ use Overtrue\Socialite\AccessToken;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class PaymentPaymentTest extends PHPUnit_Framework_TestCase
+class PaymentPaymentTest extends TestCase
 {
     /**
      * Return Payment instance.
@@ -69,9 +69,10 @@ class PaymentPaymentTest extends PHPUnit_Framework_TestCase
         $notify->shouldReceive('isValid')->andReturn(false);
         $payment->shouldReceive('getNotify')->andReturn($notify);
 
-        $this->setExpectedException(FaultException::class, 'Invalid request XML.', 400);
+        $this->setExpectedException(FaultException::class, 'Invalid request payloads.', 400);
 
-        $payment->handleNotify(function () {});
+        $payment->handleNotify(function () {
+        });
     }
 
     /**
@@ -134,6 +135,23 @@ class PaymentPaymentTest extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * test configForPayment.
+     */
+    public function testConfigForJSSDKPayment()
+    {
+        $payment = $this->getPayment();
+
+        $config = $payment->configForJSSDKPayment('prepayId');
+
+        $this->assertEquals('wxTestAppId', $config['appId']);
+        $this->assertEquals('prepay_id=prepayId', $config['package']);
+        $this->assertEquals('MD5', $config['signType']);
+        $this->assertArrayHasKey('timestamp', $config);
+        $this->assertArrayHasKey('nonceStr', $config);
+        $this->assertArrayHasKey('paySign', $config);
+    }
+
+    /**
      * test configForAppPayment.
      */
     public function testConfigForAppPayment()
@@ -172,9 +190,9 @@ class PaymentPaymentTest extends PHPUnit_Framework_TestCase
         $accessToken = Mockery::mock(AccessToken::class.'[getToken]', [['access_token' => 'mockToken']]);
 
         $accessToken->shouldReceive('getToken')->andReturnUsing(function () use ($log) {
-                $log->called = true;
+            $log->called = true;
 
-                return 'mockToken';
+            return 'mockToken';
         });
 
         $json = $payment->configForShareAddress($accessToken);
